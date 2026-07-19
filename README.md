@@ -161,7 +161,7 @@ This creates a single SuperAdmin user:
 
 | Field | Value |
 |-------|-------|
-| Email | `superadmin@example.com` |
+| Email | `superadmin@gmail.com` |
 | Password | `password` |
 | Role | `superadmin` |
 
@@ -181,7 +181,7 @@ The application is now available at **http://localhost:8000**.
 
 **Login**
 1. Go to `http://localhost:8000/login`
-2. Sign in with `superadmin@example.com` / `password`
+2. Sign in with `superadmin@gmail.com` / `password`
 
 **Invite a Client (creates a new company + admin)**
 1. Click **Invite Client** in the top nav, or the **Invite** button on the dashboard
