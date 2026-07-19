@@ -26,7 +26,7 @@
                         </td>
                         <td class="stat-num">{{ $company->users_count }}</td>
                         <td class="stat-num">{{ $company->short_urls_count }}</td>
-                        <td class="stat-num">{{ $company->short_urls_count }}</td>
+                        <td class="stat-num">{{ $company->shortUrls->sum('hits')?? 0 }}</td>
                     </tr>
                     @empty
                     <tr><td colspan="4" style="color:#888; text-align:center; padding:20px;">No companies yet. Invite a client to get started.</td></tr>
@@ -47,19 +47,21 @@
         <div class="panel-header">
             <span class="panel-title">Generated Short URLs</span>
             <div style="display:flex; gap:8px; align-items:center;">
+                <form method="GET" action="{{ route('dashboard') }}" style="display:flex; gap:6px; align-items:center;">
                 <div class="filter-bar">
-                    <select name="filter_company" id="filter_company" onchange="applyFilters()">
+                    <select name="filter_company" id="filter_company" onchange="this.form.submit()">
                         <option value="">This Month</option>
                         @foreach($allCompanies as $c)
                             <option value="{{ $c->id }}" {{ request('filter_company') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                         @endforeach
                     </select>
-                    <select name="filter_user" id="filter_user" onchange="applyFilters()">
+                    <select name="filter_user" id="filter_user" onchange="this.form.submit()">
                         <option value="">Last Month</option>
                         <option value="last_week" {{ request('filter_user') === 'last_week' ? 'selected' : '' }}>Last Week</option>
                         <option value="today" {{ request('filter_user') === 'today' ? 'selected' : '' }}>Today</option>
                     </select>
                 </div>
+                </form>
                 <a href="{{ route('short-urls.export') }}" class="btn btn-gray btn-sm">Download</a>
             </div>
         </div>

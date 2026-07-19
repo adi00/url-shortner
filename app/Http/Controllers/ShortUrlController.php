@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\ShortUrl;
+use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\CustomHelper;
@@ -11,24 +13,56 @@ class ShortUrlController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
 
           $user = Auth::user();
             if($user->isSuperAdmin()){
-                $shortUrls= ShortUrl::with(['user','company'])->latest()->paginate();
-            }elseif($user->isAdmin()){
-                $shortUrls= ShortUrl::with(['user','company'])->where('company_id',$user->company_id)->latest()->paginate();
-            }else
-            {
-                $shortUrls = ShortUrl::with(['user', 'company'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->paginate(20);
+                $query= ShortUrl::with(['user','company']);
+                if($request->filled('filter_company')){
+                    $query->where('company_id', $request->filter_company);
+                }
+                $query = $this->applyDateFilter($query, $request->filter_period);
+                $shortUrls    = $query->latest()->paginate(20)->withQueryString();
+                $allCompanies = Company::orderBy('name')->get();
+               return view('short-urls.index', compact('shortUrls', 'allCompanies'));     
+
             }
+            
+            if($user->isAdmin()){
+                $query= ShortUrl::with(['user','company'])->where('company_id',$user->company_id);
+                 if ($request->filled('filter_member')) {
+                $query->where('user_id', $request->filter_member);
+            }
+            $query = $this->applyDateFilter($query, $request->filter_period);
+
+            $shortUrls  = $query->latest()->paginate(20)->withQueryString();
+
+            $allMembers = User::where('company_id', $user->company_id)
+                ->orderBy('name')->get();
+
+            return view('short-urls.index', compact('shortUrls', 'allMembers'));
+            }
+            $query = ShortUrl::with(['user', 'company'])
+                ->where('user_id', $user->id);
+            $query     = $this->applyDateFilter($query, $request->filter_period);
+            $shortUrls = $query->latest()->paginate(20)->withQueryString();
              return view('short-urls.index', compact('shortUrls'));
     }
+
+   private function applyDateFilter($query,?string $period){
+
+        return match ($period) {
+            'today'      => $query->whereDate('created_at', today()),
+            'last_week'  => $query->whereBetween('created_at', [now()->subWeek(), now()]),
+            'last_month' => $query->whereBetween('created_at', [now()->subMonth(), now()]),
+            'this_month' => $query->whereMonth('created_at', now()->month)
+                                  ->whereYear('created_at', now()->year),
+            default      => $query,
+
+        };
+   }
 
     /**
      * Show the form for creating a new resource.
@@ -123,21 +157,28 @@ class ShortUrlController extends Controller
         return back()->with('success', 'Short URL deleted.');
     }
 
-    public function export()
+    public function export(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->isSuperAdmin()) {
-            $shortUrls = ShortUrl::with(['user', 'company'])->latest()->get();
+         if ($user->isSuperAdmin()) {
+            $query = ShortUrl::with(['user', 'company']);
+            if ($request->filled('filter_company')) {
+                $query->where('company_id', $request->filter_company);
+            }
         } elseif ($user->isAdmin()) {
-            $shortUrls = ShortUrl::with(['user', 'company'])
-                ->where('company_id', $user->company_id)
-                ->latest()->get();
+            $query = ShortUrl::with(['user', 'company'])
+                ->where('company_id', $user->company_id);
+            if ($request->filled('filter_member')) {
+                $query->where('user_id', $request->filter_member);
+            }
         } else {
-            $shortUrls = ShortUrl::with(['user', 'company'])
-                ->where('user_id', $user->id)
-                ->latest()->get();
+            $query = ShortUrl::with(['user', 'company'])
+                ->where('user_id', $user->id);
         }
+
+        $query     = $this->applyDateFilter($query, $request->filter_period);
+        $shortUrls = $query->latest()->get();
 
         $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename="short_urls.csv"'];
 

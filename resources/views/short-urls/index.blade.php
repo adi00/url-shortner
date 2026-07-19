@@ -13,13 +13,41 @@
             @endif
         </span>
         <div style="display:flex; gap:8px; align-items:center;">
+
+             <form method="GET" action="{{ route('short-urls.index') }}" style="display:flex; gap:6px; align-items:center;">
+                @if(auth()->user()->isSuperAdmin())
+                    <select name="filter_company" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Companies</option>
+                        @foreach($allCompanies ?? [] as $c)
+                            <option value="{{ $c->id }}" {{ request('filter_company') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                @elseif(auth()->user()->isAdmin())
+                    <select name="filter_member" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Members</option>
+                        @foreach($allMembers ?? [] as $m)
+                            <option value="{{ $m->id }}" {{ request('filter_member') == $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                <select name="filter_period" class="filter-select" onchange="this.form.submit()">
+                    <option value="">All Time</option>
+                    <option value="today"      {{ request('filter_period') === 'today'      ? 'selected' : '' }}>Today</option>
+                    <option value="last_week"  {{ request('filter_period') === 'last_week'  ? 'selected' : '' }}>Last 7 Days</option>
+                    <option value="this_month" {{ request('filter_period') === 'this_month' ? 'selected' : '' }}>This Month</option>
+                    <option value="last_month" {{ request('filter_period') === 'last_month' ? 'selected' : '' }}>Last Month</option>
+                </select>
+                @if(request()->hasAny(['filter_company','filter_member','filter_period']))
+                    <a href="{{ route('short-urls.index') }}" class="btn btn-gray btn-sm">✕ Clear</a>
+                @endif
+            </form>
             @if(!auth()->user()->isSuperAdmin())
                 <a href="{{ route('short-urls.create') }}" class="btn btn-orange">+ Generate</a>
             @endif
-            <a href="{{ route('short-urls.export') }}" class="btn btn-gray btn-sm">Download</a>
+            <a href="{{ route('short-urls.export',request()->only(['filter_company','filter_member','filter_period'])) }}" class="btn btn-gray btn-sm">Download</a>
         </div>
     </div>
-    
+
     <div class="panel-body" style="padding:0;">
         <table class="data-table">
             <thead>

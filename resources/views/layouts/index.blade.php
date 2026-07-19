@@ -309,7 +309,7 @@
           Shortener
     </a>
     <div class="topnav-right">
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'nav-link-active' : '' }}">Dashboard</a>
+       <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'nav-link-active' : '' }}">Dashboard</a>
         <a href="{{ route('short-urls.index') }}" class="{{ request()->routeIs('short-urls.*') ? 'nav-link-active' : '' }}">Short URLs</a>
         @if(!auth()->user()->isSuperAdmin())
             <a href="{{ route('invitations.create') }}" class="{{ request()->routeIs('invitations.create') ? 'nav-link-active' : '' }}">Invite</a>
