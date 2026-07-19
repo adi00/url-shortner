@@ -262,24 +262,7 @@ The application is now available at **http://localhost:8000**.
 
 ## Running Tests
 
-### Step 1 — Create the test database
-
-```sql
-CREATE DATABASE url_shortener_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-The test database credentials are already configured in `phpunit.xml`:
-
-```xml
-<env name="DB_CONNECTION" value="mysql"/>
-<env name="DB_DATABASE" value="url_shortener_test"/>
-<env name="DB_USERNAME" value="root"/>
-<env name="DB_PASSWORD" value=""/>
-```
-
-Update the password value there if your MySQL root has a password.
-
-### Step 2 — Run the test suite
+### Run the test suite
 
 ```bash
 php artisan test
